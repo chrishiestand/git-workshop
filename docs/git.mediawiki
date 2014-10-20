@@ -1,0 +1,1259 @@
+==About git==
+git is a [[Version_Control_System]] designed by the Linux kernel development team with a couple design goals:
+* Heavy support for branching and merging
+* High performance
+
+git achieves these priorities well; it is an order of magnitude faster than [[subversion]]. The expense is that sometimes the commands are a bit obtuse and the learning curve can be high.
+However for basics usage, git is not terribly hard to learn.
+
+git uses sha-1 sums to keep track of versions. Unlike [[subversion]], there is no simple version number.
+
+git repositories can be bare or not. Bare means that the folder only contains the git repository. Not bare (or regular) means that the folder contains both the repository (in the root level .git folder) and the contents of the repository. Bare repositories are used as distribution points, normal repository are used as development points. bare repositories are usually named projectname.git. non-bare repositories are named projectname, with the .git repository folder as a child of that folder. The workflow goes:
+
+# You start hacking the code in your non-bare development repository
+# After your want to distribute your commits, you push your code to a bare repository. From there, other developers can pull your changes to their non-bare repositories.
+
+<table class="wikitable">
+<tr><th></th><th>Bare Repository</th><th>Normal Repository</th></tr>
+<tr><td>Folder Name</td><td>ends with .git (e.g. "myproject.git")</td><td>does not end with .git (e.g. "myproject")</td></tr>
+<tr><td>Typical Use</td><td>A central repository used to push/pull to/from multiple repositories</td><td>A development repository used by one person</td></tr>
+<tr><td>Contains</td><td>The entire project history</td><td>The entire project history plus a checked out commit and uncommitted changes</td></tr>
+</table>
+
+The information presented here is not intended to cover all aspects of git. For further information please see the [[Git#References]] at the bottom of this page.
+
+==Private Collaboration git Repositories==
+If you would like to collaborate via the git version control system with
+others who do not have SNL accounts, we can now setup a private
+repository for you and your collaborators.
+
+Just [mailto:support@salk.edu?Subject=Git%20Collaboration%20Repository%20Request%3A email us] the name of the repository, the name and email of your
+collaborators, and a public [[SSH Key]] for each collaborator, including yourself.
+
+If all collaborators have SNL accounts, it may be easier to just use the
+SNL file server(s) and shell.snl.salk.edu instead. Repositories can be
+migrated to the collaboration server later.
+
+
+==Best Practices==
+See [[Version_Control_Systems#Best_Practices]] for general version control best practices
+
+
+==Cheatsheet==
+<pre>
+git config --list                                       #View current options
+git fetch                                               #Fetch commits from remote repository
+git pull                                                #Fetch commits from remote repository and merge them
+git add filename                                        #Add filename to be tracked by the repository
+git mv was.py nowis.py                                  #Rename file was.py to nowis.py
+git rm filename                                         #Delete filename
+git diff                                                #List the differences between HEAD and the current working copy
+git diff master mybranch                                #List the differences between branches master and mybranch
+git diff HEAD~1                                         #List the differences between the parent and current version, man gitrevisions(7) for more
+git diff HEAD~2                                         #List the differences between the grandparent and current version, man gitrevisions(7) for more
+git diff master~1                                       #List the differences between the parent of master and the current version, man gitrevisions(7) for more
+git diff > patch.diff                                   #Create a simple patch
+git apply patch.diff                                    #Apply a simple patch
+git format-patch origin/master --stdout > big.patch     #Create patch in mailbox format (good for multi-file patches)
+git am < big.patch                                      #Apply patch in mailbox format
+git commit -a                                           #Commit all changes
+git commit --amend                                      #Reword the previous commit message
+git revert HEAD                                         #Undo the commit that has already been pushed (e.g. to origin)
+git push                                                #Push commits to remote repository
+git branch                                              #List all branches
+git branch newbranch                                    #Create a new branch named newbranch
+git checkout newbranch                                  #Switch to branch: newbranch
+git checkout -b newbranch                               #Create a new branch named newbranch and switch to it
+git merge master                                        #Merge commits from master into the current branch
+git clone REPO PATH                                     #clone repository from REPO to PATH
+git tag                                                 #List all tags
+git log --since = "7 days"                              #Show commit logs made in the past 7 days
+git log --graph                                         #Show commit logs alongside an ascii-art depiction of branch/merge history
+git log HEAD~4..HEAD                                    #Show commit logs for the previous 4 commits
+git log HEAD~4..                                        #Show commit logs for the previous 4 commits
+gitk                                                    #Starts graphical log viewer
+git remote                                              #Show the associated remote repositories
+git show                                                #Show changes made during the last commit
+git show HEAD:path/to/file | wc -c                      #Show the filesize of the original file before changes
+git whatchanged filename                                #Show all commit logs that have modified this file
+git reset --hard ORIG_HEAD                              #Undo the previous merge
+git rebase -i SINCE                                     #Rebase the commit tree since revision SINCE
+git fetch; git rebase origin master                     #Make your local branch identical to origin master after the point of divergence, then put your local commits at the end.
+git stash list                                          #View stashes
+git stash save "reminder msg"                           #Stash uncommited changes for use later.
+git stash apply stash@{0}                               #Apply stash 0
+git gc                                                  #Run garbage collection on repository (clears up some disk space by deleting unconnected commits)
+</pre>
+
+==git Commands==
+Use the '''git help''' command for a list of common commands.
+
+<pre>
+chiestand@freeman:/cnl/data/chiestand/myproject$ git help
+usage: git [--version] [--exec-path[=GIT_EXEC_PATH]] [--html-path]
+           [-p|--paginate|--no-pager] [--no-replace-objects]
+           [--bare] [--git-dir=GIT_DIR] [--work-tree=GIT_WORK_TREE]
+           [-c name=value] [--help]
+           COMMAND [ARGS]
+
+The most commonly used git commands are:
+   add        Add file contents to the index
+   bisect     Find by binary search the change that introduced a bug
+   branch     List, create, or delete branches
+   checkout   Checkout a branch or paths to the working tree
+   clone      Clone a repository into a new directory
+   commit     Record changes to the repository
+   diff       Show changes between commits, commit and working tree, etc
+   fetch      Download objects and refs from another repository
+   grep       Print lines matching a pattern
+   init       Create an empty git repository or reinitialize an existing one
+   log        Show commit logs
+   merge      Join two or more development histories together
+   mv         Move or rename a file, a directory, or a symlink
+   pull       Fetch from and merge with another repository or a local branch
+   push       Update remote refs along with associated objects
+   rebase     Forward-port local commits to the updated upstream head
+   reset      Reset current HEAD to the specified state
+   rm         Remove files from the working tree and from the index
+   show       Show various types of objects
+   status     Show the working tree status
+   tag        Create, list, delete or verify a tag object signed with GPG
+
+See 'git help COMMAND' for more information on a specific command.
+</pre>
+
+Use '''git help [subcommand]''' for further information, e.g.:
+<source lang="bash">
+git help push
+</source>
+This brings up the man page.
+
+==Approximating the Typical Workflow==
+
+<source lang="bash">
+#Clone the origin repository into ./git-multimail
+git clone git@github.com:mhagger/git-multimail.git git-multimail
+cd git-multimail
+
+#or, update a repository that is already cloned
+cd git-multimail
+git fetch
+
+#see what state we are currently in and what the current branch is
+git status
+
+#merge the most recent changes from the origin master branch
+git pull origin master
+
+#switch branches
+git checkout other_branch
+
+#switch to a new branch based off the current branch
+git checkout -b my_new_branch
+
+#Make your changes
+$EDITOR myfile
+git add new/file
+
+#Double-check your changed files
+git diff
+
+#Whoops, I didn't want to keep that change, restore the original
+git checkout -- my/oops.py
+
+#commit your changes
+git commit -a
+
+#push your branch back to the origin
+git push origin my_new_branch
+
+#Merge your new branch into master
+git checkout master
+git merge my_new_branch
+
+#push the newly merged master back to origin
+git push origin master
+</source>
+
+==Tutorial==
+
+===Configure git===
+<source lang="bash">
+#Set your name and email
+git config --global user.name "FirstName LastName"
+git config --global user.email "username@salk.edu"
+
+#Colors improve readability
+git config --global color.ui auto
+git config --global color.status auto
+git config --global color.branch auto
+</source>
+
+Double-check that it worked:
+<source lang="bash">
+git config --global --get-regexp 'user.*'
+</source>
+
+You should see something like:
+<pre>
+user.name FirstName LastName
+user.email username@salk.edu
+</pre>
+
+Be sure your EDITOR variable is set to a text editor you like:
+<source lang="bash">
+echo $EDITOR
+</source>
+
+Output
+<pre>
+/usr/bin/vim
+</pre>
+
+If you just want a super-simple text editor, this should do the trick:
+<source lang="bash">
+export EDITOR=/usr/bin/nano
+echo "export EDITOR=/usr/bin/nano" >> ~/.bash_profile
+</source>
+
+
+
+If you don't understand how to set a text editor, ask for help.
+
+===Create a repository===
+
+====Create a bare empty repository====
+You might do this if you are going to setup a central repository for yourself or other collaborators for a new project. Create this repository in a place where any collaborators can access it.
+
+Don't forget to end your bare repository's folder name with .git, to follow convention.
+<source lang="bash">
+cd /cnl/data/$USER/
+mkdir git #I will put all my git repositories in here for convenience
+cd git
+git init --bare myproject.git
+</source>
+
+Output:
+<pre>
+Initialized empty Git repository in /netapp/cnl/data/chiestand/git/myproject.git/
+</pre>
+
+====Create a normal empty repository====
+Create this first if you do not yet have a need for a central repository for a new project. Instead, your work will start in a private development repository - you can always add a remote repository later.
+
+<source lang="bash">
+cd /cnl/data/$USER/
+git init myproject
+</source>
+
+Output:
+<pre>
+Initialized empty Git repository in /netapp/cnl/data/chiestand/myproject/.git/
+</pre>
+note: the .git folder is stored in the root directory. The .git folder is exactly the same as a bare repository by itself.
+
+Now start working in the folder you've created.
+
+====Create a bare and non-bare repositories by importing a non-versioned project====
+Do this if you have an existing un-versioned project you want to put under version control. This will create both a private development repository and a shared collaboration repository. If you do not need the shared repository you can skip those steps.
+
+Go to the top level of the project and type:
+<source lang="bash">
+cd /cnl/data/$USER/myproject #Now I'm inside the top level of my project
+git init
+</source>
+
+Output:
+<pre>
+Initialized empty Git repository in /netapp/cnl/data/chiestand/myproject/.git/
+</pre>
+
+Then add all files into the repository:
+<source lang="bash">
+git add .
+</source>
+
+Verify there are no files that haven't been tracked (eg . hidden files):
+<source lang="bash">
+git status
+</source>
+
+Output:
+<source lang="bash">
+# On branch master
+#
+# Initial commit
+#
+# Changes to be committed:
+#   (use "git rm --cached <file>..." to unstage)
+#
+#	new file:   1
+#	new file:   2
+#
+</source>
+
+Commit your files.
+<source lang="bash">
+git commit -a -m "Initial Commit of myproject as a git repository"
+</source>
+
+Output
+<pre>
+[master (root-commit) ba306e5] Initial Commit of myproject as a git repository
+ 0 files changed, 0 insertions(+), 0 deletions(-)
+ create mode 100644 1
+ create mode 100644 2
+</pre>
+
+Lastly, you'll probably want to clone this git repository to a bare repository so you and colleagues can push to it.
+
+<source lang="bash">
+cd /cnl/data/$USER
+mkdir git   #I might store all my shared git projects in this subfolder for convenience
+
+#Now I clone the git repository I've just created into a shared location
+git clone --bare myproject git/myproject.git
+</source>
+
+Output:
+<pre>
+Cloning into bare repository git/myproject.git...
+done.
+</pre>
+
+Now set the new bare repository as the remote origin for the non-bare repository
+<source lang="bash">
+cd myproject
+git config remote.origin.url /cnl/data/$USER/git/myproject.git
+
+#Confirm that push works
+git push
+</source>
+
+<pre>
+Everything up-to-date
+</pre>
+
+===Clone a repository===
+
+You can clone or pull or push git data via a local file system, ssh, the git protocol, http, and ftp.
+
+====Clone locally====
+<source lang="bash">
+cd /cnl/data/$USER
+git clone /cnl/data/$USER/git/myproject.git myproject
+</source>
+
+<pre>
+Cloning into myproject...
+done.
+</pre>
+
+====Clone via git protocol====
+The git protocol is a simple and efficient protocol made just for transmitting git repository data. One place you might use this is cloning from a [[Version_Control_Systems#DVCS_websites|DVCS website]] like github.
+
+For example, to clone from github:
+<source lang="bash">
+cd /cnl/data/$USER
+git clone git://github.com/sharpee/mid.git
+</source>
+
+Output
+<pre>
+Cloning into mid...
+remote: Counting objects: 76, done.
+remote: Compressing objects: 100% (55/55), done.
+remote: Total 76 (delta 13), reused 76 (delta 13)
+Receiving objects: 100% (76/76), 43.31 KiB, done.
+Resolving deltas: 100% (13/13), done.
+</pre>
+
+====clone/push/pull/fetch over ssh====
+
+If given a hostname as part of the source and no other protocol, git will ssh to the remote host to clone the repository. You should have [[SSH_Keys]] setup if you do this. If you use ssh more than once a day, you should have [[SSH_Keys]] setup anyway.
+
+<source lang="bash">
+git clone shell.snl.salk.edu:/cnl/data/$USER/git/myproject.git myproject
+</source>
+
+Output:
+<pre>
+Cloning into 'myproject'...
+</pre>
+
+git will ssh for you any time you need to do a pull, push, fetch, etc.
+
+
+
+===Manipulating Code in the Checked-Out Repository===
+All of these changes require commits afterwards to finalize. On the flipside, they are all easily undone until they are committed. Even when committed, undo is very easy until you have pushed. After a push, reversing a commit requires some thought: pushes cannot simply be reversed.
+
+
+====Adding Files or Folders====
+<source lang="bash">
+cd /cnl/data/$USER/myproject
+cp -r /snl/data/vcs-example/* .  #copy everything over
+</source>
+These files are still unknown by git and must be added before they are tracked:
+
+<source lang="bash">
+git status
+</source>
+
+Output
+<pre>
+# On branch master
+#
+# Initial commit
+#
+# Untracked files:
+#   (use "git add <file>..." to include in what will be committed)
+#
+#	README.md
+#	brownian-1d.py
+#	brownian-2d.py
+#	library/
+#	rank-nullspace.py
+nothing added to commit but untracked files present (use "git add" to track)
+</pre>
+
+So add them:
+<source lang="bash">
+git add .
+</source>
+Added files still need to be committed or else will not be pushed.
+
+<source lang="bash">
+git status
+</source>
+
+Output
+<source lang="bash">
+# On branch master
+#
+# Initial commit
+#
+# Changes to be committed:
+#   (use "git rm --cached <file>..." to unstage)
+#
+#	new file:   README.md
+#	new file:   brownian-1d.py
+#	new file:   brownian-2d.py
+#	new file:   library/brownian.py
+#	new file:   library/rank_nullspace.py
+#	new file:   rank-nullspace.py
+#
+</source>
+
+note: git cannot add an empty directory. If you want to add an empty directory put the file .gitignore inside the directory and add it.
+
+Finally, make your first commit:
+<source lang="bash">
+git commit -a
+</source>
+
+Leave a informational note in your text editor, then save the file and quit. Congratulations, this is the first commit.
+
+Verify that there is nothing left unknown by git:
+<source lang="bash">
+git status
+</source>
+
+<pre>
+# On branch master
+nothing to commit (working directory clean)
+</pre>
+
+====Moving Files or Folders====
+<source lang="bash">
+git mv rank-nullspace.py rank.py
+git status
+</source>
+
+Output
+<pre>
+# On branch master
+# Changes to be committed:
+#   (use "git reset HEAD <file>..." to unstage)
+#
+#	renamed:    rank-nullspace.py -> rank.py
+#
+</pre>
+
+Now commit your change
+<source lang="bash">
+git commit -a -m "Renamed rank-nullspace.py to rank.py"
+</source>
+
+Output
+<pre>
+[master 329d922] Renamed rank-nullspace.py to rank.py
+ 1 files changed, 0 insertions(+), 0 deletions(-)
+ rename rank-nullspace.py => rank.py (100%)
+</pre>
+
+====Copying Files or Folders====
+Because git stores content, there is no special copy command. git will recognize that content has been copied and will not store an additional copy in the database on a commit.
+
+<source lang="bash">
+cp -r rank.py rank-test.py
+git status
+</source>
+
+Output
+<pre>
+# On branch master
+# Untracked files:
+#   (use "git add <file>..." to include in what will be committed)
+#
+#	rank-test.py
+nothing added to commit but untracked files present (use "git add" to track)
+</pre>
+
+<source lang="bash">
+git add rank-test.py
+git commit -m "Added testing version of rank file"
+</source>
+
+Output
+<pre>
+[master e5ba37c] Added testing version of rank-test.py
+ 1 files changed, 85 insertions(+), 0 deletions(-)
+ create mode 100644 rank-test.py
+</pre>
+
+
+====Viewing Diffs====
+
+Now make a change to rank-test.py via a text editor, e.g.:
+<source lang="bash">
+vim rank-test.py
+</source>
+
+<source lang="bash">
+git status
+</source>
+
+Output
+<pre>
+# On branch master
+# Changed but not updated:
+#   (use "git add <file>..." to update what will be committed)
+#   (use "git checkout -- <file>..." to discard changes in working directory)
+#
+#	modified:   rank-test.py
+#
+no changes added to commit (use "git add" and/or "git commit -a")
+</pre>
+
+
+<source lang="bash">
+git diff
+</source>
+
+Output
+<source lang="diff">
+diff --git a/rank-test.py b/rank-test.py
+index 7a3c1d0..6679143 100644
+--- a/rank-test.py
++++ b/rank-test.py
+@@ -2,7 +2,7 @@ import numpy as np
+ from numpy.linalg import svd
+ 
+ 
+-def rank(A, atol=1e-13, rtol=0):
++def rank(A, atol=1e-13, rtol=1):
+     """Estimate the rank (i.e. the dimension of the nullspace) of a matrix.
+ 
+     The algorithm used by this function is based on the singular value
+</source>
+
+Now commit your change:
+<source lang="bash">
+git commit -a -m "Changed relative tolerance for test"
+</source>
+
+Output
+<pre>
+[master f5e7b68] Changed relative tolerance for test
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+</pre>
+
+====Ignoring files or folders====
+
+In order to make this program successfully run, you'll need an X11 session open. If you don't have one, don't worry, it's not terribly important. Type this command either way:
+
+<source lang="bash">
+python brownian-1d.py
+</source>
+
+Then run git status and notice a .pyc booger is created
+<source lang="bash">
+git status
+</source>
+
+<pre>
+# On branch master
+# Untracked files:
+#   (use "git add <file>..." to include in what will be committed)
+#
+#	library/brownian.pyc
+nothing added to commit but untracked files present (use "git add" to track)
+</pre>
+
+We could just add this file, but it might be optimized differently on another computer. Further, it's going to change anything your code does - you don't want to have to track two different files when you only need to track one. Ignoring files is an important part of any VCS. Python programming is a good example, because the python compiler will create pre-optimized .pyc files which, as a programmer, you don't really care about. So let's ignore them.
+
+Run this command:
+<source lang="bash">
+echo -n "*.pyc" > .gitignore
+</source>
+
+Now check the status again and notice that there is no mention of library/brownian.pyc
+
+<source lang="bash">
+git status
+</source>
+
+<pre>
+# On branch master
+# Untracked files:
+#   (use "git add <file>..." to include in what will be committed)
+#
+#	.gitignore
+nothing added to commit but untracked files present (use "git add" to track)
+</pre>
+
+Git tracks all your ignores in .gitignore files. Add this file so git will always ignore .pyc files within this repository, no matter where it has been cloned to.
+
+<source lang="bash">
+git add .gitignore
+git commit -a -m "Ignore .pyc files"
+</source>
+
+Output
+<pre>
+[master eb1c4d9] Ignore .pyc files
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+ create mode 100644 .gitignore
+</pre>
+
+
+====Reverting Changes Before a Commit====
+There are a few ways to go about this. Careful, these will destroy your changes to everything if a specific file is not specified.
+
+First make a change you will revert, e.g.:
+<source lang="bash">
+vim rank-test.py
+</source>
+
+Here is the simplest method to revert it
+<source lang="bash">
+git checkout -- rank-test.py
+</source>
+
+Another method
+<source lang="bash">
+git reset --hard
+</source>
+
+Output
+<pre>
+HEAD is now at eb1c4d9 Ignore .pyc files
+</pre>
+
+Note: git reset is a powerful command. See '''git help reset''' for more.
+
+Whichever method you use, double check that git is now in a clean state:
+<source lang="bash">
+git status
+</source>
+
+Output:
+<pre>
+# On branch master
+nothing to commit (working directory clean)
+</pre>
+
+====Deleting Files or Folders====
+
+<source lang="bash">
+git rm rank.py
+</source>
+
+Output
+<pre>
+rm 'rank.py'
+</pre>
+
+Now commit your change:
+<source lang="bash">
+git commit -a -m "Removed rank code"
+</source>
+
+Output
+<pre>
+[master 3a736a0] Removed test rank code
+ 1 files changed, 0 insertions(+), 85 deletions(-)
+ delete mode 100644 rank-test.py
+</pre>
+
+====Revewing the changelog====
+<source lang="bash">
+git log
+</source>
+
+Output
+<pre>
+commit 3a736a0da6e24cd38ee33c59811daf7a784674da
+Author: Chris Hiestand <chiestand@salk.edu>
+Date:   Fri Mar 30 19:48:26 2012 -0700
+
+    Removed rank code
+
+commit eb1c4d917381ca7a955c7effe1a295cbc390df55
+Author: Chris Hiestand <chiestand@salk.edu>
+Date:   Fri Mar 30 19:43:40 2012 -0700
+
+    Ignore .pyc files
+
+commit 9f60b55f78fe0a65115f8cbc6c7f76f9703bae06
+Author: Chris Hiestand <chiestand@salk.edu>
+Date:   Fri Mar 30 19:35:19 2012 -0700
+
+    Adding brownian motion scripts
+
+commit f5e7b6843493a6414c5beb53b60c8c691a40014f
+Author: Chris Hiestand <chiestand@salk.edu>
+Date:   Fri Mar 30 19:31:44 2012 -0700
+
+    Changed relative tolerance for test
+
+commit b5d77dc1c584f62564a4161eb3f886c707163ba1
+Author: Chris Hiestand <chiestand@salk.edu>
+Date:   Fri Mar 30 19:29:31 2012 -0700
+
+    Added testing version of rank file
+
+commit 8446a130e8f4730cd6d4821e7fc4759bbfe7628d
+Author: Chris Hiestand <chiestand@salk.edu>
+Date:   Fri Mar 30 19:29:18 2012 -0700
+
+    Renamed rank_nullspace.py to rank.py
+
+commit bfe09051c18b39cfdda94fd62aa7ba58d81e5061
+Author: Chris Hiestand <chiestand@salk.edu>
+Date:   Fri Mar 30 19:28:53 2012 -0700
+
+    Initial commit of scipy example code
+</pre>
+
+
+====Who Was Responsible for This?====
+Find out who made the most recent change to every line in a file. Columns are in order: commit, file, Author and date, line number and line value.
+
+<source lang="bash">
+git blame rank-test.py
+</source>
+
+Output
+<pre>
+^bfe0905 rank_nullspace.py (Chris Hiestand 2012-03-30 19:28:53 -0700  1) import numpy as np
+^bfe0905 rank_nullspace.py (Chris Hiestand 2012-03-30 19:28:53 -0700  2) from numpy.linalg import svd
+^bfe0905 rank_nullspace.py (Chris Hiestand 2012-03-30 19:28:53 -0700  3) 
+^bfe0905 rank_nullspace.py (Chris Hiestand 2012-03-30 19:28:53 -0700  4) 
+570bdcf8 rank-test.py      (Chris Hiestand 2012-03-30 19:51:24 -0700  5) def rank(A, atol=1e-13, rtol=1):
+^bfe0905 rank_nullspace.py (Chris Hiestand 2012-03-30 19:28:53 -0700  6)     """Estimate the rank (i.e. the dimension of the nullspac
+^bfe0905 rank_nullspace.py (Chris Hiestand 2012-03-30 19:28:53 -0700  7) 
+...
+</pre>
+
+
+====What is the history of this string?====
+To track the history of a string in your repository, in any file throughout the history, use the pickaxe feature.
+
+<source lang="bash">
+git log -S"import numpy as np"
+</source>
+
+<pre>
+commit 3a736a0da6e24cd38ee33c59811daf7a784674da
+Author: Chris Hiestand <chiestand@salk.edu>
+Date:   Fri Mar 30 19:48:26 2012 -0700
+
+    Removed rank code
+
+commit b5d77dc1c584f62564a4161eb3f886c707163ba1
+Author: Chris Hiestand <chiestand@salk.edu>
+Date:   Fri Mar 30 19:29:31 2012 -0700
+
+    Added testing version of rank file
+
+commit 8446a130e8f4730cd6d4821e7fc4759bbfe7628d
+Author: Chris Hiestand <chiestand@salk.edu>
+Date:   Fri Mar 30 19:29:18 2012 -0700
+
+    Renamed rank_nullspace.py to rank.py
+
+commit bfe09051c18b39cfdda94fd62aa7ba58d81e5061
+Author: Chris Hiestand <chiestand@salk.edu>
+Date:   Fri Mar 30 19:28:53 2012 -0700
+
+    Initial commit of scipy example code
+
+</pre>
+
+====git submodules - using multiple repositories====
+
+=====Adding a submodule to your repository=====
+git submodules allow you to include other git repositories into your repository. These are critically useful to build on other people's projects.
+<source lang="bash">
+#Clone Tatyana Sharpee's MID and put it into the mid directory
+git submodule add git://github.com/sharpee/mid.git mid
+</source>
+
+Output
+<pre>
+Cloning into mid...
+remote: Counting objects: 76, done.
+remote: Compressing objects: 100% (55/55), done.
+remote: Total 76 (delta 13), reused 76 (delta 13)
+Receiving objects: 100% (76/76), 43.31 KiB, done.
+Resolving deltas: 100% (13/13), done.
+</pre>
+
+Notice how this changes your repository:
+
+<source lang="bash">
+git status
+</source>
+
+Output
+<pre>
+# On branch master
+# Changes to be committed:
+#   (use "git reset HEAD <file>..." to unstage)
+#
+#	new file:   .gitmodules
+#	new file:   mid
+#
+</pre>
+
+
+You also need to initialize the submodule with the project
+<source lang="bash">
+git submodule init
+</source>
+
+Output
+<pre>
+Submodule 'mid' (git://github.com/sharpee/mid.git) registered for path 'mid'
+</pre>
+
+Now commit
+<source lang="bash">
+git commit -a -m "Adding mid submodule to mid folder"
+</source>
+
+Output
+<pre>
+[master f28bcf9] Adding mid submodule to mid folder
+ 2 files changed, 4 insertions(+), 0 deletions(-)
+ create mode 100644 .gitmodules
+ create mode 160000 mid
+</pre>
+
+=====Initializing a submodule in a cloned repository=====
+Clone the first repository elsewhere
+<source lang="bash">
+cd ..
+git clone myproject myproject2
+</source>
+
+Output
+<pre>
+Cloning into myproject2...
+done.
+</pre>
+
+Initialize the submodules
+<source lang="bash">
+cd myproject2/
+git submodule init
+</source>
+
+Output
+<pre>
+Submodule 'mid' (git://github.com/sharpee/mid.git) registered for path 'mid'
+</pre>
+
+Update the submodule(s)
+<source lang="bash">
+git submodule update
+</source>
+
+Output
+<pre>
+Cloning into mid...
+remote: Counting objects: 76, done.
+remote: Compressing objects: 100% (55/55), done.
+remote: Total 76 (delta 13), reused 76 (delta 13)
+Receiving objects: 100% (76/76), 43.31 KiB, done.
+Resolving deltas: 100% (13/13), done.
+Submodule path 'mid': checked out 'af9a133d3dcd6da020c20b2fe73afbcf9a4bbb27'
+</pre>
+
+====Where does the repository live?====
+
+The primary method is:
+<source lang="bash">
+git remote -v
+</source>
+
+Output
+<pre>
+origin	/cnl/data/chiestand/myproject (fetch)
+origin	/cnl/data/chiestand/myproject (push)
+</pre>
+
+Or look in .git/config in the root folder, or type:
+<source lang="bash">
+git config -f .git/config --get remote.origin.url
+</source>
+
+Output
+<pre>
+/cnl/data/chiestand/myproject
+</pre>
+
+====Somebody moved the repository, how do I update my checked-out version?====
+You can use git remote:
+<source lang="bash">
+git remote rm origin
+git remote add origin protocol://user@remotehost.tld/path/to/new/repo.git
+</source>
+
+Or edit .git/config in the root folder and update the remote origin url or:
+<source lang="bash">
+git config -f .git/config --replace-all remote.origin.url protocol://user@remotehost.tld/path/to/new/repo.git
+</source>
+
+===Branching and Merging===
+This is where a DVCS like git really shines.
+
+====Creating a Branch====
+
+The first branch of every repository is master. Before switching to another branch, there should be nothing uncommitted in your current branch. 
+
+Create the branch experimental
+<source lang="bash">
+git branch experimental
+</source>
+
+switch to branch experimental
+<source lang="bash">
+git checkout experimental
+</source>
+
+Output
+<pre>
+Switched to branch 'experimental'
+</pre>
+
+Make some changes
+<source lang="bash">
+vim rank-test.py 
+</source>
+
+Verify hippo-model.py has been changed in experimental
+<source lang="bash">
+git status
+</source>
+
+Output
+<pre>
+# On branch experimental
+# Changed but not updated:
+#   (use "git add <file>..." to update what will be committed)
+#   (use "git checkout -- <file>..." to discard changes in working directory)
+#
+#	modified:   rank-test.py
+#
+no changes added to commit (use "git add" and/or "git commit -a")
+</pre>
+
+Commit your changes in experimental
+<source lang="bash">
+git commit -a -m "I'm going through my experimental phase"
+</source>
+
+Output
+<pre>
+[experimental 1cba165] I'm going through my experimental phase
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+</pre>
+
+If you want the remote repository to have a copy of the experimental branch, push it there:
+<source lang="bash">
+git push origin experimental
+</source>
+
+Output
+<pre>
+Counting objects: 29, done.
+Delta compression using up to 2 threads.
+Compressing objects: 100% (28/28), done.
+Writing objects: 100% (29/29), 5.07 KiB, done.
+Total 29 (delta 9), reused 0 (delta 0)
+Unpacking objects: 100% (29/29), done.
+To /cnl/data/chiestand/git/myproject.git
+ * [new branch]      experimental -> experimental
+</pre>
+
+Now switch between branches at your leisure:
+<source lang="bash">
+ git checkout master
+</source>
+
+Output
+<pre>
+Switched to branch 'master'
+</pre>
+
+====Listing branches in the repository====
+The current branch gets an asterisk next to it:
+<source lang="bash">
+git branch
+</source>
+
+Output
+<pre>
+  experimental
+* master
+</pre>
+
+
+====Merging Branches====
+Imagine you are satisfied with how your experimental branch has ended up and you'd like to merge it into your master
+
+First switch back to master.
+<source lang="bash">
+ git checkout master
+</source>
+
+Output
+<pre>
+Switched to branch 'master'
+</pre>
+
+<source lang="bash">
+git merge experimental
+</source>
+
+<pre>
+Updating f28bcf9..1cba165
+Fast-forward
+ rank-test.py |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+</pre>
+
+Wasn't that easy?
+
+
+====Resolving Conflicts====
+If two commits in separate branches change the same line in the same file, they cannot be automatically merged so a conflict is thrown. You must manually resolve the conflict for git to continue.
+
+Let's create a conflict by editing the same line in rank-test.py in two different branches.
+
+So let's create a new branch to create a conflicting line
+<source lang="bash">
+git checkout -b conflicting-branch
+</source>
+
+Output
+<pre>
+Switched to a new branch 'conflicting-branch'
+</pre>
+
+<source lang="bash">
+vim rank-test.py
+git commit -a -m "Testing new rtol param value"
+</source>
+
+Output
+<pre>
+[conflicting-branch b1ed4a6] Testing new rtol param value
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+</pre>
+
+Switch back to master and commit changes to the same line of the same file
+<source lang="bash">
+git checkout master
+</source>
+
+<pre>
+Switched to branch 'master'
+</pre>
+
+Now edit the same line of the same file
+<source lang="bash">
+vim rank-testy.py
+git commit -a -m "Testing new rtol param value in master"
+</source>
+
+<pre>
+[master 8da7aa3] Testing new rtol param value in master
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+</pre>
+
+Now let's see what happens when we merge conflicting-branch into master
+<source lang="bash">
+git merge conflicting-branch
+</source>
+
+<pre>
+Auto-merging rank-test.py
+CONFLICT (content): Merge conflict in rank-test.py
+Automatic merge failed; fix conflicts and then commit the result.
+</pre>
+
+
+Edit the file, note that git has helpfully shown you which section was created by which commit. Leave the line you want to keep.
+
+<source lang="bash">
+vim rank-test.py
+git commit -a -m "merging conflicting-branch"
+</source>
+
+The conflict has now been resolved
+
+====Tagging====
+Imagine you have published a paper, and you want to freeze your code at the point in time used to generate data for the paper. Simply make a tag for that code.
+
+<source lang="bash">
+#Tag the current version of master
+chiestand@sagan:/cnl/data/chiestand/myproject$ git tag j-neurosci-hippo-2012
+
+#Alternatively, make a tag for a previous commit:
+chiestand@sagan:/cnl/data/chiestand/myproject$ git tag j-neurosci-hippo-2012 4f9c26bf8cb77bc92527932df3fad0e91142f726
+
+#Check your list of tags:
+chiestand@sagan:/cnl/data/chiestand/myproject$ git tag
+j-neurosci-hippo-2012
+
+#Try checking out a tag:
+chiestand@sagan:/cnl/data/chiestand/myproject$ git checkout j-neurosci-hippo-2012
+Note: checking out 'j-neurosci-hippo-2012'.
+
+You are in 'detached HEAD' state. You can look around, make experimental
+changes and commit them, and you can discard any commits you make in this
+state without impacting any branches by performing another checkout.
+
+If you want to create a new branch to retain commits you create, you may
+do so (now or later) by using -b with the checkout command again. Example:
+
+  git checkout -b new_branch_name
+
+HEAD is now at 4f9c26b... Updated hippo-model script, now with class
+</source>
+
+===Rebasing===
+Rebasing, contrasted with merging, results in all commits appearing to have been done in series (instead of done in parallel and eventually merged). Rebasing can be done at any point and can replace a merge after it has taken place. If your workflow involved a lot of branching and merging, you may choose to rebase instead of merge in order to make the history easier to parse. Rebasing is potentially destructive of a change history, so if you want to be sure to keep your development before a rebase make you're developing in a branch - otherwise your work may be deleted after garbage collection.
+
+====Interactive Rebasing====
+This is a simple form of rebasing that is useful to create feature-complete commits. Imagine you are working on feature X which involves changes to several places in the code. It would be a best practice if you committed your changes every step along the way. But when you push your changes back to the bare repository, for others to use, it would be convenient if you only pushed back a single, feature-complete, commit containing all of of your changes.
+
+You can use interactive rebasing to squash previous commits and combine them into one. This is the voltron of git commands.
+<source lang="bash">
+#My last 4 commits were all done to create feature X:
+chiestand@freeman:/cnl/data/chiestand/myproject$ git log HEAD~4..HEAD
+commit fcea8c7a3f0b6dc04058453bdde7bb0e35294c65
+Author: Chris Hiestand <chiestand@salk.edu>
+Date:   Thu Mar 22 13:41:12 2012 -0700
+
+    Moving from test code to production code for feature X
+
+commit 1d7251bf9c30708c20f2ea94d6e7102f3def9e6c
+Author: Chris Hiestand <chiestand@salk.edu>
+Date:   Thu Mar 22 13:40:41 2012 -0700
+
+    Adding feature X data to file "2"
+
+commit cf3352c6561563c849e350ce97f01e67779ce38e
+Author: Chris Hiestand <chiestand@salk.edu>
+Date:   Thu Mar 22 13:40:11 2012 -0700
+
+    Testing Feature X in the hippo model
+
+commit e249c5492112e546e8e1169ffa6f80f7d61a6f5e
+Author: Chris Hiestand <chiestand@salk.edu>
+Date:   Thu Mar 22 13:38:10 2012 -0700
+
+    Deleting file "3" for compatibility with feature X
+
+
+</source>
+
+So we'll rebase HEAD against HEAD four generations ago:
+<source lang="bash">
+chiestand@freeman:/cnl/data/chiestand/myproject$ git rebase -i HEAD~4
+</source>
+
+The interactive git rebase menu
+<pre>
+pick e249c54 Deleting file "3" for compatibility with feature X
+pick cf3352c Testing Feature X in the hippo model
+pick 1d7251b Adding feature X data to file "2"
+pick fcea8c7 Moving from test code to production code for feature X
+
+# Rebase 936fe8d..fcea8c7 onto 936fe8d
+#
+# Commands:
+#  p, pick = use commit
+#  r, reword = use commit, but edit the commit message
+#  e, edit = use commit, but stop for amending
+#  s, squash = use commit, but meld into previous commit
+#  f, fixup = like "squash", but discard this commit's log message
+#
+# If you remove a line here THAT COMMIT WILL BE LOST.
+# However, if you remove everything, the rebase will be aborted.
+#
+</pre>
+
+Squash 3 of the commits:
+<pre>
+pick e249c54 Deleting file "3" for compatibility with feature X
+squash cf3352c Testing Feature X in the hippo model
+squash 1d7251b Adding feature X data to file "2"
+squash fcea8c7 Moving from test code to production code for feature X
+</pre>
+
+Write your new log message:
+<pre>
+# This is a combination of 4 commits.
+Adding feature X to hippo model
+
+Also updated dataset to contain feature X data
+Seems to work okay during testing
+</pre>
+
+The final output should look like this:
+<source lang="bash">
+chiestand@freeman:/cnl/data/chiestand/myproject$ git rebase -i HEAD~4
+[detached HEAD d4ccc6e] Adding feature X to hippo model
+ 1 files changed, 0 insertions(+), 1 deletions(-)
+ delete mode 100644 3
+[detached HEAD 4ccc5e9] Adding feature X to hippo model
+ 3 files changed, 4 insertions(+), 2 deletions(-)
+ delete mode 100644 3
+Successfully rebased and updated refs/heads/master.
+</source>
+
+Now if you look at the log or diff history, you'll only see one commit instead of four.
+
+==References==
+http://gitref.org/ : The git reference site<br />
+http://schacon.github.com/git/gittutorial.html : The official git tutorial<br />
+http://git-scm.com/documentation : Official documentation<br />
+http://book.git-scm.com/ : The Git community book<br />
+http://githowto.com/ : A good git tutorial<br />
+http://vimeo.com/14629850 : A great intro video to using git
