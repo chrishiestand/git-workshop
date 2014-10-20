@@ -194,53 +194,6 @@ Use **git help [subcommand]** for further information, e.g.:
 
 This brings up the man page.
 
-Approximating the Typical Workflow
-----------------------------------
-
-.. code:: bash
-
-    #Clone the origin repository into ./git-multimail
-    git clone git@github.com:mhagger/git-multimail.git git-multimail
-    cd git-multimail
-
-    #or, update a repository that is already cloned
-    cd git-multimail
-    git fetch
-
-    #see what state we are currently in and what the current branch is
-    git status
-
-    #merge the most recent changes from the origin master branch
-    git pull origin master
-
-    #switch branches
-    git checkout other_branch
-
-    #switch to a new branch based off the current branch
-    git checkout -b my_new_branch
-
-    #Make your changes
-    $EDITOR myfile
-    git add new/file
-
-    #Double-check your changed files
-    git diff
-
-    #Whoops, I didn't want to keep that change, restore the original
-    git checkout -- my/oops.py
-
-    #commit your changes
-    git commit -a
-
-    #push your branch back to the origin
-    git push origin my_new_branch
-
-    #Merge your new branch into master
-    git checkout master
-    git merge my_new_branch
-
-    #push the newly merged master back to origin
-    git push origin master
 
 
 Workshop Walk-Through
@@ -309,13 +262,15 @@ follow convention.
 
 .. code:: bash
 
-    git init --bare helloworld.git
+    cd
+    git init --bare myproject.git
+    #You can now clone this empty repository to development locations
 
 Output:
 
 ::
 
-    Initialized empty Git repository in /home.local/chrish/helloworld.git/
+    Initialized empty Git repository in /home.local/chrish/myproject.git/
 
 Create a normal empty repository
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -326,7 +281,8 @@ development repository - you can always add a remote repository later.
 
 .. code:: bash
 
-    git init helloworld
+    cd
+    git init myproject
 
 
 Alternatively, you could also create the folder first
@@ -334,20 +290,29 @@ Alternatively, you could also create the folder first
 .. code:: bash
 
     #Alternatively
-    mkdir helloworld
-    cd helloworld
+    mkdir myproject
+    cd myproject
     git init
 
 Output:
 
 ::
 
-    Initialized empty Git repository in Initialized empty Git repository in /home.local/chrish/helloworld/.git/
+    Initialized empty Git repository in Initialized empty Git repository in /home.local/chrish/myproject/.git/
 
 note: the .git folder is stored in the root directory. The .git folder
 is exactly the same as a bare repository by itself.
 
-Now start working in the folder you've created.
+Now you can start version controlled work in the folder you've created.
+
+
+.. code:: bash
+
+    #Clean this up for now, we'll create it again later
+    cd
+    rm -rf myproject
+
+
 
 Create a bare and non-bare repositories by importing a non-versioned project
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -361,14 +326,17 @@ Go to the top level of the project and type:
 
 .. code:: bash
 
-    cd /cnl/data/$USER/myproject #Now I'm inside the top level of my project
+    mkdir my_previous_project #Now I'm inside the top level of my project
+    cd my_previous_project
+    echo 'file contents 1' > file1.txt
+    echo 'file contents 2' > file2.txt
     git init
 
 Output:
 
 ::
 
-    Initialized empty Git repository in /netapp/cnl/data/chiestand/myproject/.git/
+    Initialized empty Git repository in /home.local/chrish/my_previous_project/.git/
 
 Then add all files into the repository:
 
@@ -393,21 +361,21 @@ Output:
     # Changes to be committed:
     #   (use "git rm --cached <file>..." to unstage)
     #
-    #   new file:   1
-    #   new file:   2
+    #   new file:   file1.txt
+    #   new file:   file2.txt
     #
 
 Commit your files.
 
 .. code:: bash
 
-    git commit -a -m "Initial Commit of myproject as a git repository"
+    git commit -a -m "Initial import my_previous_project into a git repository"
 
 Output
 
 ::
 
-    [master (root-commit) ba306e5] Initial Commit of myproject as a git repository
+    [master (root-commit) ba306e5] Initial import my_previous_project into a git repository
      0 files changed, 0 insertions(+), 0 deletions(-)
      create mode 100644 1
      create mode 100644 2
@@ -417,17 +385,19 @@ repository so you and colleagues can push to it.
 
 .. code:: bash
 
-    cd /cnl/data/$USER
+    cd
     mkdir git   #I might store all my shared git projects in this subfolder for convenience
 
     #Now I clone the git repository I've just created into a shared location
-    git clone --bare myproject git/myproject.git
+    git clone --bare my_previous_project git/my_previoius_project.git
+
+    #In actual use, this might be a website like github instead
 
 Output:
 
 ::
 
-    Cloning into bare repository git/myproject.git...
+    Cloning into bare repository git/my_previous_project.git...
     done.
 
 Now set the new bare repository as the remote origin for the non-bare
@@ -435,11 +405,11 @@ repository
 
 .. code:: bash
 
-    cd myproject
-    git config remote.origin.url /cnl/data/$USER/git/myproject.git
+    cd my_previous_project
+    git remote add origin "$HOME/git/my_previoius_project.git"
 
-    #Confirm that push works
-    git push
+    #Confirm that fetch works
+    git fetch
 
 ::
 
@@ -448,7 +418,7 @@ repository
 Clone a repository
 ~~~~~~~~~~~~~~~~~~
 
-You can clone or pull or push git data via a local file system, ssh, the
+You can clone or fetch or push git data via a local file system, ssh, the
 git protocol, http, and ftp.
 
 Clone locally
@@ -456,28 +426,37 @@ Clone locally
 
 .. code:: bash
 
-    cd /cnl/data/$USER
-    git clone /cnl/data/$USER/git/myproject.git myproject
+    cd
+    git clone myproject.git myproject
 
 ::
 
     Cloning into myproject...
     done.
 
+.. code:: bash
+
+    #Clean this up for now, we'll create it again later
+    cd
+    rm -rf myproject
+
+
 Clone via git protocol
 ^^^^^^^^^^^^^^^^^^^^^^
 
 The git protocol is a simple and efficient protocol made just for
 transmitting git repository data. One place you might use this is
-cloning from a `DVCS website <Version_Control_Systems#DVCS_websites>`__
-like github.
+cloning from a DVCS website like github.
 
 For example, to clone from github:
 
 .. code:: bash
 
-    cd /cnl/data/$USER
-    git clone git://github.com/sharpee/mid.git
+    #This will not work because our test server is not directly connected to the internet
+    # git clone https://github.com/sharpee/mid.git
+    
+    #Instead for this class we will clone via HTTPS
+    git clone https://github.com/sharpee/mid.git
 
 Output
 
@@ -490,17 +469,18 @@ Output
     Receiving objects: 100% (76/76), 43.31 KiB, done.
     Resolving deltas: 100% (13/13), done.
 
-clone/push/pull/fetch over ssh
+clone/push/fetch over ssh
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 If given a hostname as part of the source and no other protocol, git
-will ssh to the remote host to clone the repository. You should have
-`SSH\_Keys <SSH_Keys>`__ setup if you do this. If you use ssh more than
-once a day, you should have `SSH\_Keys <SSH_Keys>`__ setup anyway.
+will ssh to the remote host to clone the repository. We recommend you have
+SSH Keys setup if you do this. If you use ssh more than
+once a day, you should have SSH Keys setup anyway because it prevents you
+from having to type in your password every time.
 
 .. code:: bash
 
-    git clone shell.snl.salk.edu:/cnl/data/$USER/git/myproject.git myproject
+    git clone git-workshop.snl.salk.edu:~/myproject.git myproject
 
 Output:
 
@@ -508,7 +488,8 @@ Output:
 
     Cloning into 'myproject'...
 
-git will ssh for you any time you need to do a pull, push, fetch, etc.
+git will ssh for you any time you need to do a fetch or push
+
 
 Manipulating Code in the Checked-Out Repository
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -519,13 +500,14 @@ committed, undo is very easy until you have pushed. After a push,
 reversing a commit requires some thought: pushes cannot simply be
 reversed.
 
+
 Adding Files or Folders
 ^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code:: bash
 
-    cd /cnl/data/$USER/myproject
-    cp -r /snl/data/vcs-example/* .  #copy everything over
+    cd myproject
+    cp -r /workshop/vcs-example/* .  #copy everything over
 
 These files are still unknown by git and must be added before they are
 tracked:
@@ -584,7 +566,7 @@ Output
     #
 
 note: git cannot add an empty directory. If you want to add an empty
-directory put the file .gitignore inside the directory and add it.
+directory put any file such as .gitignore inside the directory and add it.
 
 Finally, make your first commit:
 
@@ -638,6 +620,7 @@ Output
     [master 329d922] Renamed rank-nullspace.py to rank.py
      1 files changed, 0 insertions(+), 0 deletions(-)
      rename rank-nullspace.py => rank.py (100%)
+
 
 Copying Files or Folders
 ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -736,6 +719,7 @@ Output
     [master f5e7b68] Changed relative tolerance for test
      1 files changed, 1 insertions(+), 1 deletions(-)
 
+
 Ignoring files or folders
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -775,6 +759,9 @@ Run this command:
 .. code:: bash
 
     echo -n "*.pyc" > .gitignore
+    
+    #Alternatively
+    # vim .gitignore #and put *.pyc on the first line, save and quit
 
 Now check the status again and notice that there is no mention of
 library/brownian.pyc
@@ -853,6 +840,7 @@ Output:
 
     # On branch master
     nothing to commit (working directory clean)
+
 
 Deleting Files or Folders
 ^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -958,6 +946,7 @@ Output
     ^bfe0905 rank_nullspace.py (Chris Hiestand 2012-03-30 19:28:53 -0700  7) 
     ...
 
+
 What is the history of this string?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -1007,7 +996,7 @@ projects.
 .. code:: bash
 
     #Clone Tatyana Sharpee's MID and put it into the mid directory
-    git submodule add git://github.com/sharpee/mid.git mid
+    git submodule add https://github.com/sharpee/mid.git mid
 
 Output
 
@@ -1037,18 +1026,6 @@ Output
     #   new file:   .gitmodules
     #   new file:   mid
     #
-
-You also need to initialize the submodule with the project
-
-.. code:: bash
-
-    git submodule init
-
-Output
-
-::
-
-    Submodule 'mid' (git://github.com/sharpee/mid.git) registered for path 'mid'
 
 Now commit
 
@@ -1093,7 +1070,7 @@ Output
 
 ::
 
-    Submodule 'mid' (git://github.com/sharpee/mid.git) registered for path 'mid'
+    Submodule 'mid' (https://github.com/sharpee/mid.git) registered for path 'mid'
 
 Update the submodule(s)
 
@@ -1126,8 +1103,8 @@ Output
 
 ::
 
-    origin  /cnl/data/chiestand/myproject (fetch)
-    origin  /cnl/data/chiestand/myproject (push)
+    origin	/home.local/chrish/myproject (fetch)
+    origin	/home.local/chrish/myproject (push)
 
 Or look in .git/config in the root folder, or type:
 
@@ -1139,7 +1116,7 @@ Output
 
 ::
 
-    /cnl/data/chiestand/myproject
+    /home.local/chrish/myproject
 
 Somebody moved the repository, how do I update my checked-out version?
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -1157,6 +1134,33 @@ or:
 .. code:: bash
 
     git config -f .git/config --replace-all remote.origin.url protocol://user@remotehost.tld/path/to/new/repo.git
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 Branching and Merging
 ~~~~~~~~~~~~~~~~~~~~~
