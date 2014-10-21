@@ -140,12 +140,10 @@ http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html .
 Traditional Version Control Systems (VCS)
 -----------------------------------------
 
-| A central repository is typically in one location. You can checkout
-copies of the centrally-located repository and then commit your changes.
+| A central repository is typically in one location. You can checkout copies of the centrally-located repository and then commit your changes.
 | RCS (don't use this, it's ancient)
 | CVS (don't use this, it's very old and not nearly as good as SVN)
-| `Subversion <Subversion>`__ (svn) (note: SVN has recently adopted some
-features of a DVCS)
+| Subversion (or svn for short) (note: SVN has recently adopted some features of a DVCS)
 
 Distributed/Decentralized Version Control (DVCS)
 ------------------------------------------------
@@ -584,7 +582,7 @@ repository so you and colleagues can push to it.
     mkdir git   #I might store all my shared git projects in this subfolder for convenience
 
     #Now I clone the git repository I've just created into a shared location
-    git clone --bare my_previous_project git/my_previoius_project.git
+    git clone --bare my_previous_project git/my_previous_project.git
 
     #In actual use, this might be a website like github instead
 
@@ -601,7 +599,7 @@ repository
 .. code:: bash
 
     cd my_previous_project
-    git remote add origin "$HOME/git/my_previoius_project.git"
+    git remote add origin "$HOME/git/my_previous_project.git"
 
     #Confirm that fetch works
     git fetch
@@ -1331,36 +1329,57 @@ or:
     git config -f .git/config --replace-all remote.origin.url protocol://user@remotehost.tld/path/to/new/repo.git
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 Branching and Merging
 ~~~~~~~~~~~~~~~~~~~~~
 
 This is where a DVCS like git really shines.
+
+.. code:: bash
+
+    cd
+    git init --bare helloworld.git
+    git clone helloworld.git helloworld
+    cd helloworld
+    $EDITOR hello.py
+    #Put in the following code then save the file
+
+.. code:: python
+
+    print "hello world"
+
+.. code:: bash
+
+    #make sure it runs
+    python hello.py
+
+Output
+
+::
+
+    hello world
+
+
+.. code:: bash
+    
+    git add .
+    git commit -a -m "initial creation of hello world python app"
+    git push origin master
+
+
+Output
+
+::
+
+    [master (root-commit) 2471a36] initial creation of hello world python app
+     1 file changed, 1 insertion(+)
+     create mode 100644 hello.py
+    
+    Counting objects: 3, done.
+    Writing objects: 100% (3/3), 256 bytes | 0 bytes/s, done.
+    Total 3 (delta 0), reused 0 (delta 0)
+    To /home.local/chrish/helloworld.git
+     * [new branch]      master -> master
+
 
 Creating a Branch
 ^^^^^^^^^^^^^^^^^
@@ -1373,89 +1392,112 @@ Create the branch experimental
 
 .. code:: bash
 
-    git branch experimental
+    git status #Visually check that working directory is clean
+    git checkout -b py3 #Creates branch py3 and switches to it
+    vim hello.py
 
-switch to branch experimental
+.. code:: python
+
+    print("hello world")
+    git commit -a -m "Switched to python3 style print"
+
+In parallel, let's make a change to the master branch
 
 .. code:: bash
 
-    git checkout experimental
+    git checkout master
+    vim hello.py
+
+.. code:: python
+
+    print "hello world!"
+
+.. code:: bash
+
+    git commit -a -m "Added some enthusiasm"
+
+Now let's try to merge the two branches. What do you think will happen?
+
+.. code:: bash
+
+    git status #verify we are in master branch. The branch that is changed is always the one currently checked out.
+    git merge py3
 
 Output
 
 ::
 
-    Switched to branch 'experimental'
+    Auto-merging hello.py
+    CONFLICT (content): Merge conflict in hello.py
+    Automatic merge failed; fix conflicts and then commit the result.
 
-Make some changes
+
+Conflict Resolution
+^^^^^^^^^^^^^^^^^^^
+
+If two commits in separate branches change the same line in the same
+file, they cannot be automatically merged so a conflict is thrown. You
+must manually resolve the conflict for git to continue.
+
+We have to manually resolve the conflict
 
 .. code:: bash
 
-    vim rank-test.py 
+    $EDITOR hello.py
 
-Verify hippo-model.py has been changed in experimental
+.. code:: python
+
+    print("hello world!")
+
+Test our change
 
 .. code:: bash
 
-    git status
+    python hello.py
 
 Output
 
 ::
 
-    # On branch experimental
-    # Changed but not updated:
-    #   (use "git add <file>..." to update what will be committed)
-    #   (use "git checkout -- <file>..." to discard changes in working directory)
-    #
-    #   modified:   rank-test.py
-    #
-    no changes added to commit (use "git add" and/or "git commit -a")
+    hello world!
 
-Commit your changes in experimental
+
+Now mark the merge as resolved by using git add
 
 .. code:: bash
 
-    git commit -a -m "I'm going through my experimental phase"
+    git add hello.py
+    git commit
+    git push origin master
 
 Output
 
 ::
 
-    [experimental 1cba165] I'm going through my experimental phase
-     1 files changed, 1 insertions(+), 1 deletions(-)
+    Counting objects: 11, done.
+    Delta compression using up to 2 threads.
+    Compressing objects: 100% (3/3), done.
+    Writing objects: 100% (9/9), 749 bytes | 0 bytes/s, done.
+    Total 9 (delta 1), reused 0 (delta 0)
+    To /home.local/chrish/helloworld.git
+       2471a36..3af56e2  master -> master
 
-If you want the remote repository to have a copy of the experimental
+
+If you want the remote repository to have a copy of the py3
 branch, push it there:
 
 .. code:: bash
 
-    git push origin experimental
+    git push origin py3
 
 Output
 
 ::
 
-    Counting objects: 29, done.
-    Delta compression using up to 2 threads.
-    Compressing objects: 100% (28/28), done.
-    Writing objects: 100% (29/29), 5.07 KiB, done.
-    Total 29 (delta 9), reused 0 (delta 0)
-    Unpacking objects: 100% (29/29), done.
-    To /cnl/data/chiestand/git/myproject.git
-     * [new branch]      experimental -> experimental
+    Total 0 (delta 0), reused 0 (delta 0)
+    To /home.local/chrish/helloworld.git
+     * [new branch]      py3 -> py3
 
-Now switch between branches at your leisure:
-
-.. code:: bash
-
-     git checkout master
-
-Output
-
-::
-
-    Switched to branch 'master'
 
 Listing branches in the repository
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -1470,118 +1512,10 @@ Output
 
 ::
 
-      experimental
     * master
+      py3
 
-Merging Branches
-^^^^^^^^^^^^^^^^
 
-Imagine you are satisfied with how your experimental branch has ended up
-and you'd like to merge it into your master
-
-First switch back to master.
-
-.. code:: bash
-
-     git checkout master
-
-Output
-
-::
-
-    Switched to branch 'master'
-
-.. code:: bash
-
-    git merge experimental
-
-::
-
-    Updating f28bcf9..1cba165
-    Fast-forward
-     rank-test.py |    2 +-
-     1 files changed, 1 insertions(+), 1 deletions(-)
-
-Wasn't that easy?
-
-Resolving Conflicts
-^^^^^^^^^^^^^^^^^^^
-
-If two commits in separate branches change the same line in the same
-file, they cannot be automatically merged so a conflict is thrown. You
-must manually resolve the conflict for git to continue.
-
-Let's create a conflict by editing the same line in rank-test.py in two
-different branches.
-
-So let's create a new branch to create a conflicting line
-
-.. code:: bash
-
-    git checkout -b conflicting-branch
-
-Output
-
-::
-
-    Switched to a new branch 'conflicting-branch'
-
-.. code:: bash
-
-    vim rank-test.py
-    git commit -a -m "Testing new rtol param value"
-
-Output
-
-::
-
-    [conflicting-branch b1ed4a6] Testing new rtol param value
-     1 files changed, 1 insertions(+), 1 deletions(-)
-
-Switch back to master and commit changes to the same line of the same
-file
-
-.. code:: bash
-
-    git checkout master
-
-::
-
-    Switched to branch 'master'
-
-Now edit the same line of the same file
-
-.. code:: bash
-
-    vim rank-testy.py
-    git commit -a -m "Testing new rtol param value in master"
-
-::
-
-    [master 8da7aa3] Testing new rtol param value in master
-     1 files changed, 1 insertions(+), 1 deletions(-)
-
-Now let's see what happens when we merge conflicting-branch into master
-
-.. code:: bash
-
-    git merge conflicting-branch
-
-::
-
-    Auto-merging rank-test.py
-    CONFLICT (content): Merge conflict in rank-test.py
-    Automatic merge failed; fix conflicts and then commit the result.
-
-Edit the file, note that git has helpfully shown you which section was
-created by which commit. Leave the line you want to keep.
-
-.. code:: bash
-
-    vim rank-test.py
-    git commit -a -m "merging conflicting-branch"
-
-The conflict has now been resolved
 
 Tagging
 ^^^^^^^
@@ -1593,18 +1527,32 @@ for that code.
 .. code:: bash
 
     #Tag the current version of master
-    chiestand@sagan:/cnl/data/chiestand/myproject$ git tag j-neurosci-hippo-2012
+    git tag j-neurosci-hippo-2014
 
     #Alternatively, make a tag for a previous commit:
-    chiestand@sagan:/cnl/data/chiestand/myproject$ git tag j-neurosci-hippo-2012 4f9c26bf8cb77bc92527932df3fad0e91142f726
+    git tag j-neurosci-hippo-2014 HEAD~1
+    #or
+    git tag j-neurosci-hippo-2014 a6f8d555e142d83f03261fb762b26120d2646ad1
 
     #Check your list of tags:
-    chiestand@sagan:/cnl/data/chiestand/myproject$ git tag
-    j-neurosci-hippo-2012
+    git tag
+
+Output
+
+::
+
+    j-neurosci-hippo-2014
+
+.. code:: bash
 
     #Try checking out a tag:
-    chiestand@sagan:/cnl/data/chiestand/myproject$ git checkout j-neurosci-hippo-2012
-    Note: checking out 'j-neurosci-hippo-2012'.
+     git checkout j-neurosci-hippo-2014
+
+Output
+
+::
+
+    Note: checking out 'j-neurosci-hippo-2014'.
 
     You are in 'detached HEAD' state. You can look around, make experimental
     changes and commit them, and you can discard any commits you make in this
@@ -1615,20 +1563,26 @@ for that code.
 
       git checkout -b new_branch_name
 
-    HEAD is now at 4f9c26b... Updated hippo-model script, now with class
+    HEAD is now at 3af56e2... Merge branch 'py3'
+
+.. code:: bash
+
+    #switch back to master
+    git checkout master
+
 
 Rebasing
 ~~~~~~~~
 
 Rebasing, contrasted with merging, results in all commits appearing to
 have been done in series (instead of done in parallel and eventually
-merged). Rebasing can be done at any point and can replace a merge after
-it has taken place. If your workflow involved a lot of branching and
-merging, you may choose to rebase instead of merge in order to make the
+merged). Rebasing can be done at any point before a push or merge. If
+your workflow involved a lot of branching and merging, you may choose to rebase instead of merge in order to make the
 history easier to parse. Rebasing is potentially destructive of a change
 history, so if you want to be sure to keep your development before a
 rebase make you're developing in a branch - otherwise your work may be
 deleted after garbage collection.
+
 
 Interactive Rebasing
 ^^^^^^^^^^^^^^^^^^^^
@@ -1646,48 +1600,80 @@ them into one. This is the voltron of git commands.
 
 .. code:: bash
 
-    #My last 4 commits were all done to create feature X:
-    chiestand@freeman:/cnl/data/chiestand/myproject$ git log HEAD~4..HEAD
-    commit fcea8c7a3f0b6dc04058453bdde7bb0e35294c65
-    Author: Chris Hiestand <chiestand@salk.edu>
-    Date:   Thu Mar 22 13:41:12 2012 -0700
+    #Create a new branch and make 3 commits within it
+    git status  #Visually ensure we are on master
+    git checkout -b multi-lingual
 
-        Moving from test code to production code for feature X
+First new commit
 
-    commit 1d7251bf9c30708c20f2ea94d6e7102f3def9e6c
-    Author: Chris Hiestand <chiestand@salk.edu>
-    Date:   Thu Mar 22 13:40:41 2012 -0700
+.. code:: python
 
-        Adding feature X data to file "2"
-
-    commit cf3352c6561563c849e350ce97f01e67779ce38e
-    Author: Chris Hiestand <chiestand@salk.edu>
-    Date:   Thu Mar 22 13:40:11 2012 -0700
-
-        Testing Feature X in the hippo model
-
-    commit e249c5492112e546e8e1169ffa6f80f7d61a6f5e
-    Author: Chris Hiestand <chiestand@salk.edu>
-    Date:   Thu Mar 22 13:38:10 2012 -0700
-
-        Deleting file "3" for compatibility with feature X
-
-So we'll rebase HEAD against HEAD four generations ago:
+    import sys
+    print("hello world!")
 
 .. code:: bash
 
-    chiestand@freeman:/cnl/data/chiestand/myproject$ git rebase -i HEAD~4
+    git commit -a -m "first new commit"
+
+Second new commit
+
+.. code:: python
+
+    import sys
+
+    language = 'english'
+
+    if language == 'english':
+        print("hello world!")
+    
+    else:
+        print("universal translator needs tuning")
+
+
+.. code:: bash
+
+    git commit -a -m "second new commit"
+
+Third new commit
+
+.. code:: python
+
+    import sys
+
+    if len(sys.argv) > 1:
+        language = sys.argv[1]
+    else:
+        language = "english"    #the default
+
+    if language == 'english':
+        print("hello world!")
+    else:
+        print("universal translator needs tuning")
+
+.. code:: bash
+
+    git commit -a -m "third new commit"
+
+
+Let's clean up the commit history and combine the last three commits
+
+.. code:: bash
+
+    git rebase -i HEAD~3
+
+
+So we'll rebase HEAD against HEAD three generations ago:
+
 
 The interactive git rebase menu
 
 ::
 
-    pick e249c54 Deleting file "3" for compatibility with feature X
-    pick cf3352c Testing Feature X in the hippo model
-    pick 1d7251b Adding feature X data to file "2"
-    pick fcea8c7 Moving from test code to production code for feature X
+    pick 7404803 first new commit
+    pick cf3752c second new commit
+    pick 11de03d third new commit
 
-    # Rebase 936fe8d..fcea8c7 onto 936fe8d
+    # Rebase 3af56e2..11de03d onto 3af56e2
     #
     # Commands:
     #  p, pick = use commit
@@ -1695,52 +1681,193 @@ The interactive git rebase menu
     #  e, edit = use commit, but stop for amending
     #  s, squash = use commit, but meld into previous commit
     #  f, fixup = like "squash", but discard this commit's log message
+    #  x, exec = run command (the rest of the line) using shell
+    #
+    # These lines can be re-ordered; they are executed from top to bottom.
     #
     # If you remove a line here THAT COMMIT WILL BE LOST.
+    #
     # However, if you remove everything, the rebase will be aborted.
     #
+    # Note that empty commits are commented out
 
 Squash 3 of the commits:
 
 ::
 
-    pick e249c54 Deleting file "3" for compatibility with feature X
-    squash cf3352c Testing Feature X in the hippo model
-    squash 1d7251b Adding feature X data to file "2"
-    squash fcea8c7 Moving from test code to production code for feature X
+    pick 7404803 first new commit
+    squash cf3752c second new commit
+    squash 11de03d third new commit
 
 Write your new log message:
 
 ::
 
-    # This is a combination of 4 commits.
-    Adding feature X to hippo model
-
-    Also updated dataset to contain feature X data
-    Seems to work okay during testing
+    added logic for a multi-lingual hello world
 
 The final output should look like this:
 
-.. code:: bash
+::
 
-    chiestand@freeman:/cnl/data/chiestand/myproject$ git rebase -i HEAD~4
-    [detached HEAD d4ccc6e] Adding feature X to hippo model
-     1 files changed, 0 insertions(+), 1 deletions(-)
-     delete mode 100644 3
-    [detached HEAD 4ccc5e9] Adding feature X to hippo model
-     3 files changed, 4 insertions(+), 2 deletions(-)
-     delete mode 100644 3
-    Successfully rebased and updated refs/heads/master.
+    [detached HEAD e96223f] added logic for a multi-lingual hello world
+     1 file changed, 11 insertions(+), 1 deletion(-)
+    Successfully rebased and updated refs/heads/feature1.
 
 Now if you look at the log or diff history, you'll only see one commit
 instead of four.
+
+
+.. code:: bash
+    
+    git log
+
+
+.. code:: bash
+
+    #push the new branch up to origin
+    git push origin multi-lingual
+
+
+Though it is common to use rebasing to squash commits, it's even more common
+to use rebasing as a substitute for merging, as we will see next.
+
+
+Typical Ideal Workflow
+^^^^^^^^^^^^^^^^^^^^^^^
+
+A really clean workflow is if you rebase (as opposed to merging) changes
+from master into a branch, and merge (as opposed to rebasing) changes from
+a branch into master.
+
+
+.. code:: bash
+
+    git fetch                           #check for collaborator changes
+    git checkout master                 #Ensure we are on master
+    git merge --ff-only origin/master   #ensure most up-to-date branch
+
+
+Let's create a new feature branch 
+
+.. code:: bash
+
+    git checkout -b monty-python
+    $EDITOR hello-monty.py
+
+
+.. code:: python
+
+
+    import random
+
+    things = ['world', 'duck', 'goat cheese', 'moon', 'quantum flapdoodle']
+    thing = random.choice(things)
+
+    print("hello {thing}!".format(thing=thing))
+
+
+.. code:: bash
+
+    git add hello-monty.py
+    git commit -a -m "added python-esque hello world"
+    
+
+
+In parallel, we can make changes to the master branch.
+For ease of demonstration, we will ensure they are non-conflicting changes
+by modifying a different file.
+
+.. code:: bash
+
+    git checkout master
+    $EDITOR hello.py
+
+.. code:: python
+
+    from __future__ import print_function
+    from __future__ import unicode_literals
+
+    print("hello world!")
+
+
+.. code:: bash
+
+    git commit -a -m "add future unicode/print"
+
+
+Now let's rebase the master changes into our monty-python branch
+
+.. code:: bash
+
+    git checkout monty-python
+    git log
+    git rebase master
+
+::
+
+    First, rewinding head to replay your work on top of it...
+    Fast-forwarded monty-python to master.
+
+
+.. code:: bash
+
+    git log #Note the last commit to master is functionally here
+
+
+Note that the commit to master is listed *below* the commit to monty-python
+
+Now let's make another change to monty-python
+
+.. code:: bash
+
+    $EDITOR hello-monty.py
+
+
+.. code:: python
+    
+    import random
+
+    things = ['spam', 'duck', 'goat cheese', 'moon', 'quantum flapdoodle']
+    thing = random.choice(things)
+
+    print("hello {thing}!".format(thing=thing))
+    
+
+.. code:: bash
+
+    git commit -a -m "What kind of python list has no spam?"
+
+
+We intend to merge the monty-python branch back into master. But first, let's ensure
+that monty-python is up to date, in that it already has the latest commit from master
+
+.. code:: bash
+
+    git rebase master
+
+::
+
+    Current branch monty-python is up to date.
+
+
+Now we're ready to merge to master, knowing we can fast forward merge.
+
+.. code:: bash
+
+    git checkout master
+    ls
+    git log
+    git merge --ff-only monty-python
+    ls
+    git log
+
+
 
 References
 ----------
 
 | http://gitref.org/ : The git reference site
-| http://schacon.github.com/git/gittutorial.html : The official git
-tutorial
+| http://schacon.github.com/git/gittutorial.html : The official git tutorial
 | http://git-scm.com/documentation : Official documentation
 | http://book.git-scm.com/ : The Git community book
 | http://githowto.com/ : A good git tutorial
